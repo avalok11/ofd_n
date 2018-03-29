@@ -25,5 +25,4 @@ def get_fn(cooks, reg_id, inn='7825335145', status=2):
     """
     response = requests.get('https://api.sbis.ru/ofd/v1/orgs/' + str(inn) + '/kkts/' + str(reg_id) + '/storages',
                             cookies=cooks)
-    print(response)
     return response.json()

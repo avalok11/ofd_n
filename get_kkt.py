@@ -24,5 +24,4 @@ def get_kkt(cooks, inn='7825335145', status=2):
     """
     response = requests.get('https://api.sbis.ru/ofd/v1/orgs/' + str(inn) + '/kkts',
                             cookies=cooks)
-    print(response)
     return response.json()
