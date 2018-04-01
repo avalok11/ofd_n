@@ -15,7 +15,7 @@ import get_zrep as z
 def main():
     cooks = au.connect(idd=vl.ofd_idd, login=vl.ofd_name, pwd=vl.ofd_pwd)
     reg_id = '0001603014030362'
-    date_from = '2018-03-27T00:00:00'
+    date_from = '2018-03-24T00:00:00'
     date_to = '2018-03-29T00:00:00'
 
     z_rep = z.get_z_rep(cooks, reg_id, date_from, date_to, inn='7825335145')

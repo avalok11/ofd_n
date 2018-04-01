@@ -105,3 +105,115 @@ def push_fn(fn_list):
     print("| DATA SAVED")
     print("| time consumed: ", time.clock())
     print("--------------------------------\n")
+
+
+def get_fn():
+    # ==============================
+    # подключаемся к SQL
+    print("\n--------------------------------")
+    print("|CONNECTING to SQL")
+    start = time.clock()
+    conn_ms = pymssql.connect(host=vl.ip_mssql, user=vl.usr_ms, password=vl.pwd_ms,
+                              database=vl.db_ms, charset='utf8')
+
+    cursor_ms = conn_ms.cursor()
+    cursor_ms.execute("SELECT regId FROM RU_T_FISCAL_FNn WHERE status=2;")
+    fn = cursor_ms.fetchall()
+    conn_ms.close()
+
+    print("| DATA DOWNLOADED")
+    print("| time consumed: ", time.clock())
+    print("--------------------------------")
+    return fn
+
+
+def push_z_reports(z_reports):
+    # ===
+    # подготавливаем данные, определяем точный набор полей для корректного залития
+    print("--------------------------------")
+    print("|SENDING Z REPORTS LIST to SQL")
+    start = time.clock()
+    z_reports = pd.DataFrame(z_reports)
+    z_reports['kktNumber2'] = z_reports['kktNumber']
+    z_reports['fsNumber2'] = z_reports['fsNumber']
+    z_reports['kktRegId2'] = z_reports['kktRegId']
+    z_reports['shiftNumber2'] = z_reports['shiftNumber']
+    z_reports = z_reports[['kktNumber2', 'fsNumber2', 'kktRegId2', 'shiftNumber2', 'inn', 'kpp', 'organizationName',
+                           'shiftNumber', 'dateTimeOpen', 'dateTimeClose',
+                           'incomeSum', 'cashSum', 'eCashSum', 'returnCashSum', 'returnECashSum', 'outcomeSum',
+                           'nds10', 'nds18', 'incomeCount', 'incomeReturnCount', 'outcomeCount', 'outcomeReturnCount',
+                           'receiptCorrectionCountSell', 'receiptCorrectionCountBuy', 'totalSumSellCorrection',
+                           'totalSumBuyCorrection', 'kktName', 'kktAddress', 'kktNumber', 'fsNumber', 'kktRegId',
+                           'shiftDocNumber', 'kktSalesPoint']]
+    z_reports['dateTimeOpen'] = z_reports['dateTimeOpen'].apply(pd.to_datetime, errors='coerce')
+    z_reports['dateTimeClose'] = z_reports['dateTimeClose'].apply(pd.to_datetime, errors='coerce')
+    # ===
+    # переводим datetime в строку
+    z_reports = list((tuple(x[:]) for x in z_reports.values.tolist()))
+    # ===========================
+    # ОБНОВЛЕНИЕ ДАННЫХ В БАЗЕ
+    # ===========================
+    # УДАЛЯЕМ ВСЕ И ПОТОМ ВСТАВЛЯЕМ
+    conn_ms = pymssql.connect(host=vl.ip_mssql, user=vl.usr_ms, password=vl.pwd_ms,
+                              database=vl.db_ms, charset='utf8')
+    cursor_ms = conn_ms.cursor()
+    cursor_ms.executemany("BEGIN "
+                          "  IF NOT EXISTS "
+                          "    (SELECT 1 FROM RU_T_FISCAL_Zn "
+                          "                 WHERE kktNumber=%s AND fsNumber=%s AND kktRegId=%s AND shiftNumber=%s)"
+                          "  BEGIN "
+                          "    INSERT INTO RU_T_FISCAL_Zn (inn, kpp, organizationName, shiftNumber, dateTimeOpen, "
+                          " dateTimeClose, incomeSum, cashSum, eCashSum, returnCashSum, returnECashSum, outcomeSum, "
+                          " nds10, nds18, incomeCount, incomeReturnCount, outcomeCount, outcomeReturnCount, "
+                          " receiptCorrectionCountSell, receiptCorrectionCountBuy, totalSumSellCorrection, "
+                          " totalSumBuyCorrection, kktName, kktAddress, kktNumber, fsNumber, kktRegId, shiftDocNumber, "
+                          " kktSalesPoint) "
+                          "    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                          "            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                          "            %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                          "  END "
+                          "END", z_reports)
+
+    conn_ms.commit()
+    conn_ms.close()
+    print("| DATA SAVED")
+    print("| time consumed: ", time.clock())
+    print("--------------------------------\n")
+
+
+def push_broken_fn(fiscal_broken, date_to):
+    # ===
+    # подготавливаем данные, определяем точный набор полей для корректного залития
+    print("--------------------------------")
+    print("| SENDING BROKEN FN to SQL")
+    start = time.clock()
+    fiscal_broken['date'] = date_to
+
+    # ===
+    # переводим датафрем в списко для записи в SQL
+    fiscal_broken = list((tuple(x)) for x in fiscal_broken.values.tolist())
+
+    # ===========================
+    # ОБНОВЛЕНИЕ ДАННЫХ В БАЗЕ
+    # ===========================
+    # УДАЛЯЕМ ВСЕ И ПОТОМ ВСТАВЛЯЕМ
+    conn_ms = pymssql.connect(host=vl.ip_mssql, user=vl.usr_ms, password=vl.pwd_ms,
+                              database=vl.db_ms, charset='utf8')
+
+    cursor_ms = conn_ms.cursor()
+    cursor_ms.execute("DELETE FROM RU_T_FISCAL_BROKEN_FNn WHERE regId=%s AND dateTo=%s", fiscal_broken)
+    cursor_ms.executemany("BEGIN "
+                          "  IF NOT EXISTS "
+                          "    (SELECT 1 FROM RU_T_FISCAL_BROKEN_FNn WHERE regId=%s AND dateTo=%s )"
+                          "  BEGIN "
+                          "    INSERT INTO RU_T_FISCAL_BROKEN_FNn (regId,dateTo) "
+                          "    VALUES (%s, %s)"
+                          "  END "
+                          "END", (fiscal_broken, fiscal_broken))
+
+    conn_ms.commit()
+    conn_ms.close()
+    print("| DATA SAVED")
+    print("| time consumed: ", time.clock())
+    print("--------------------------------\n")
+
