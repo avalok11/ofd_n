@@ -22,7 +22,7 @@ def main():
     start_kkt = time.clock()
     list_kkt = ofd.get_kkt(cooks, inn='7825335145')
     print("| TOTAL KKT: ", len(list_kkt))
-    print("| time consumed: ", time.clock()-start_kkt)
+    print("| CPU consumed: ", time.clock()-start_kkt)
     print("--------------------------------\n")
     # записываем ККТ в SQL
     sql.push_kkt(list_kkt)
@@ -42,9 +42,8 @@ def main():
         fiscal_storage = pd.DataFrame(ofd.get_fn(cooks, reg_id, inn='7825335145'))
         fiscal_storage['regId'] = reg_id
         fn_list = pd.concat([fn_list, fiscal_storage])
-    print("| FN LIST:\n", fn_list)
     print("| TOTAL FN: ", len(fn_list))
-    print("| time consumed: ", time.clock()-start_fn)
+    print("| CPU consumed: ", time.clock()-start_fn)
     print("--------------------------------\n")
 
     # записываем данные ФН в SQL

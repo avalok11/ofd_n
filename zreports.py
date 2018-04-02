@@ -55,7 +55,7 @@ def main():
     print("| TOTAL Z REPORTS: ", len(z_reports_data))
     print("| TOTAL FN with Z REPORTS: ", count_printers)
     print("| TOTAL BROKEN FN: ", len(fiscal_broken))
-    print("| time consumed: ", time.clock()-start_z)
+    print("| CPU consumed: ", time.clock()-start_z)
     print("--------------------------------\n")
 
     # --------------------------

@@ -51,7 +51,7 @@ def push_kkt(kkt_list):
     conn_ms.commit()
     conn_ms.close()
     print("| DATA SAVED")
-    print("| time consumed: ", time.clock()-start_sql)
+    print("| CPU consumed: ", time.clock()-start_sql)
     print("--------------------------------\n")
 
 
@@ -103,7 +103,7 @@ def push_fn(fn_list):
     conn_ms.commit()
     conn_ms.close()
     print("| DATA SAVED")
-    print("| time consumed: ", time.clock()-start_fn)
+    print("| CPU consumed: ", time.clock()-start_fn)
     print("--------------------------------\n")
 
 
@@ -122,7 +122,7 @@ def get_fn():
     conn_ms.close()
 
     print("| DATA DOWNLOADED")
-    print("| time consumed: ", time.clock()-start_fn)
+    print("| CPU consumed: ", time.clock()-start_fn)
     print("--------------------------------")
     return fn
 
@@ -177,7 +177,7 @@ def push_z_reports(z_reports):
     conn_ms.commit()
     conn_ms.close()
     print("| DATA SAVED")
-    print("| time consumed: ", time.clock()-start_z)
+    print("| CPU consumed: ", time.clock()-start_z)
     print("--------------------------------\n")
 
 
@@ -207,6 +207,6 @@ def push_broken_fn(fiscal_broken, date_to):
     conn_ms.commit()
     conn_ms.close()
     print("| DATA SAVED")
-    print("| time consumed: ", time.clock()-start_fn)
+    print("| CPU consumed: ", time.clock()-start_fn)
     print("--------------------------------\n")
 
