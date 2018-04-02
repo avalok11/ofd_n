@@ -5,7 +5,7 @@
 import auth as au
 import get_kkt as kkt
 import validation as vl
-import sql_bulk as sql
+import sql as sql
 import get_fn as fn
 import pandas as pd
 import time

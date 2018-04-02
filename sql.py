@@ -13,7 +13,7 @@ def push_kkt(kkt_list):
     # подготавливаем данные, определяем точный набор полей для корректного залития
     print("--------------------------------")
     print("| SENDING KKT LIST to SQL")
-    start = time.clock()
+    start_sql = time.clock()
     kkt_list = pd.DataFrame(kkt_list)
     kkt_list = kkt_list[['regId', 'model', 'factoryId', 'address', 'status', 'kpp', 'organizationName',
                          'fsFinishDate', 'licenseStartDate', 'licenseFinishDate']]
@@ -51,7 +51,7 @@ def push_kkt(kkt_list):
     conn_ms.commit()
     conn_ms.close()
     print("| DATA SAVED")
-    print("| time consumed: ", time.clock())
+    print("| time consumed: ", time.clock()-start_sql)
     print("--------------------------------\n")
 
 
@@ -60,7 +60,7 @@ def push_fn(fn_list):
     # подготавливаем данные, определяем точный набор полей для корректного залития
     print("--------------------------------")
     print("| SENDING FN LIST to SQL")
-    start = time.clock()
+    start_fn = time.clock()
     fn_list = pd.DataFrame(fn_list)
     if 'effectiveTo' not in fn_list.columns.values:
         fn_list['effectiveTo'] = None
@@ -103,7 +103,7 @@ def push_fn(fn_list):
     conn_ms.commit()
     conn_ms.close()
     print("| DATA SAVED")
-    print("| time consumed: ", time.clock())
+    print("| time consumed: ", time.clock()-start_fn)
     print("--------------------------------\n")
 
 
@@ -112,7 +112,7 @@ def get_fn():
     # подключаемся к SQL
     print("\n--------------------------------")
     print("|CONNECTING to SQL")
-    start = time.clock()
+    start_fn = time.clock()
     conn_ms = pymssql.connect(host=vl.ip_mssql, user=vl.usr_ms, password=vl.pwd_ms,
                               database=vl.db_ms, charset='utf8')
 
@@ -122,7 +122,7 @@ def get_fn():
     conn_ms.close()
 
     print("| DATA DOWNLOADED")
-    print("| time consumed: ", time.clock())
+    print("| time consumed: ", time.clock()-start_fn)
     print("--------------------------------")
     return fn
 
@@ -132,7 +132,7 @@ def push_z_reports(z_reports):
     # подготавливаем данные, определяем точный набор полей для корректного залития
     print("--------------------------------")
     print("|SENDING Z REPORTS LIST to SQL")
-    start = time.clock()
+    start_z = time.clock()
     z_reports = pd.DataFrame(z_reports)
     z_reports['kktNumber2'] = z_reports['kktNumber']
     z_reports['fsNumber2'] = z_reports['fsNumber']
@@ -177,7 +177,7 @@ def push_z_reports(z_reports):
     conn_ms.commit()
     conn_ms.close()
     print("| DATA SAVED")
-    print("| time consumed: ", time.clock())
+    print("| time consumed: ", time.clock()-start_z)
     print("--------------------------------\n")
 
 
@@ -186,12 +186,8 @@ def push_broken_fn(fiscal_broken, date_to):
     # подготавливаем данные, определяем точный набор полей для корректного залития
     print("--------------------------------")
     print("| SENDING BROKEN FN to SQL")
-    start = time.clock()
-    fiscal_broken['date'] = date_to
-
-    # ===
-    # переводим датафрем в списко для записи в SQL
-    fiscal_broken = list((tuple(x)) for x in fiscal_broken.values.tolist())
+    start_fn = time.clock()
+    fiscal_broken = tuple(fiscal_broken)
 
     # ===========================
     # ОБНОВЛЕНИЕ ДАННЫХ В БАЗЕ
@@ -201,19 +197,16 @@ def push_broken_fn(fiscal_broken, date_to):
                               database=vl.db_ms, charset='utf8')
 
     cursor_ms = conn_ms.cursor()
-    cursor_ms.execute("DELETE FROM RU_T_FISCAL_BROKEN_FNn WHERE regId=%s AND dateTo=%s", fiscal_broken)
+    cursor_ms.executemany("DELETE FROM RU_T_FISCAL_BROKEN_FNn WHERE regId=%s AND dateTo=%s", fiscal_broken)
+    conn_ms.commit()
     cursor_ms.executemany("BEGIN "
-                          "  IF NOT EXISTS "
-                          "    (SELECT 1 FROM RU_T_FISCAL_BROKEN_FNn WHERE regId=%s AND dateTo=%s )"
-                          "  BEGIN "
-                          "    INSERT INTO RU_T_FISCAL_BROKEN_FNn (regId,dateTo) "
+                          "    INSERT INTO RU_T_FISCAL_BROKEN_FNn (regId, dateTo) "
                           "    VALUES (%s, %s)"
-                          "  END "
-                          "END", (fiscal_broken, fiscal_broken))
+                          "END", fiscal_broken)
 
     conn_ms.commit()
     conn_ms.close()
     print("| DATA SAVED")
-    print("| time consumed: ", time.clock())
+    print("| time consumed: ", time.clock()-start_fn)
     print("--------------------------------\n")
 
