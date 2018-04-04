@@ -39,9 +39,9 @@ def push_kkt(kkt_list):
     cursor_ms.execute('TRUNCATE TABLE RU_T_FISCAL_KKTn;')
     cursor_ms.executemany("BEGIN "
                           "  IF NOT EXISTS "
-                          "    (SELECT 1 FROM RU_T_FISCAL_KKTn WHERE regId=%s AND factoryId=%s )"
+                          "    (SELECT 1 FROM RU_T_FISCAL_KKT WHERE regId=%s AND factoryId=%s )"
                           "  BEGIN "
-                          "    INSERT INTO RU_T_FISCAL_KKTn (regId, model, factoryId, address, status, kpp,"
+                          "    INSERT INTO RU_T_FISCAL_KKT (regId, model, factoryId, address, status, kpp,"
                           "                                 organizationName, fsFinishDate, licenseStartDate,"
                           "                                 licenseFinishDate) "
                           "    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
@@ -89,10 +89,10 @@ def push_fn(fn_list):
                               database=vl.db_ms, charset='utf8')
 
     cursor_ms = conn_ms.cursor()
-    cursor_ms.execute('TRUNCATE TABLE RU_T_FISCAL_FNn;')
+    cursor_ms.execute('TRUNCATE TABLE RU_T_FISCAL_FN;')
     cursor_ms.executemany("BEGIN "
                           "  IF NOT EXISTS "
-                          "    (SELECT 1 FROM RU_T_FISCAL_FNn WHERE regId=%s AND storageId=%s )"
+                          "    (SELECT 1 FROM RU_T_FISCAL_FN WHERE regId=%s AND storageId=%s )"
                           "  BEGIN "
                           "    INSERT INTO RU_T_FISCAL_FNn (regId, storageId, model, status, effectiveFrom,"
                           "                                  effectiveTo, fsFinishDate) "
@@ -117,7 +117,7 @@ def get_fn():
                               database=vl.db_ms, charset='utf8')
 
     cursor_ms = conn_ms.cursor()
-    cursor_ms.execute("SELECT regId FROM RU_T_FISCAL_FNn WHERE status=2;")
+    cursor_ms.execute("SELECT regId FROM RU_T_FISCAL_FN WHERE status=2;")
     fn = cursor_ms.fetchall()
     conn_ms.close()
 
@@ -145,8 +145,8 @@ def push_z_reports(z_reports):
                            'receiptCorrectionCountSell', 'receiptCorrectionCountBuy', 'totalSumSellCorrection',
                            'totalSumBuyCorrection', 'kktName', 'kktAddress', 'kktNumber', 'fsNumber', 'kktRegId',
                            'shiftDocNumber', 'kktSalesPoint']]
-    z_reports['dateTimeOpen'] = z_reports['dateTimeOpen'].apply(pd.to_datetime, errors='coerce')
-    z_reports['dateTimeClose'] = z_reports['dateTimeClose'].apply(pd.to_datetime, errors='coerce')
+    z_reports['dateTimeOpen'] = pd.to_datetime(z_reports['dateTimeOpen'], format='%d.%m.%y %H:%M')
+    z_reports['dateTimeClose'] = pd.to_datetime(z_reports['dateTimeClose'], format='%d.%m.%y %H:%M')
     # ===
     # переводим datetime в строку
     z_reports = list((tuple(x[:]) for x in z_reports.values.tolist()))
@@ -159,10 +159,10 @@ def push_z_reports(z_reports):
     cursor_ms = conn_ms.cursor()
     cursor_ms.executemany("BEGIN "
                           "  IF NOT EXISTS "
-                          "    (SELECT 1 FROM RU_T_FISCAL_Zn "
+                          "    (SELECT 1 FROM RU_T_FISCAL_Z "
                           "                 WHERE kktNumber=%s AND fsNumber=%s AND kktRegId=%s AND shiftNumber=%s)"
                           "  BEGIN "
-                          "    INSERT INTO RU_T_FISCAL_Zn (inn, kpp, organizationName, shiftNumber, dateTimeOpen, "
+                          "    INSERT INTO RU_T_FISCAL_Z (inn, kpp, organizationName, shiftNumber, dateTimeOpen, "
                           " dateTimeClose, incomeSum, cashSum, eCashSum, returnCashSum, returnECashSum, outcomeSum, "
                           " nds10, nds18, incomeCount, incomeReturnCount, outcomeCount, outcomeReturnCount, "
                           " receiptCorrectionCountSell, receiptCorrectionCountBuy, totalSumSellCorrection, "
@@ -197,10 +197,10 @@ def push_broken_fn(fiscal_broken, date_to):
                               database=vl.db_ms, charset='utf8')
 
     cursor_ms = conn_ms.cursor()
-    cursor_ms.executemany("DELETE FROM RU_T_FISCAL_BROKEN_FNn WHERE regId=%s AND dateTo=%s", fiscal_broken)
+    cursor_ms.executemany("DELETE FROM RU_T_FISCAL_BROKEN_FN WHERE regId=%s AND dateTo=%s", fiscal_broken)
     conn_ms.commit()
     cursor_ms.executemany("BEGIN "
-                          "    INSERT INTO RU_T_FISCAL_BROKEN_FNn (regId, dateTo) "
+                          "    INSERT INTO RU_T_FISCAL_BROKEN_FN (regId, dateTo) "
                           "    VALUES (%s, %s)"
                           "END", fiscal_broken)
 

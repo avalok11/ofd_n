@@ -7,7 +7,7 @@ import validation as vl
 import sql as sql
 import pandas as pd
 import time
-import get_zrep as z
+import ofd as z
 import datetime
 
 
@@ -24,7 +24,8 @@ def main():
     print(date_to)
     # --------------------------
     # ШАГ 1 Получаем список Фискальных накопителей из базы данных
-    fn_list = sql.get_fn()
+    # fn_list = sql.get_fn()
+    fn_list = [('0001361088040988',)] # для теста
 
     # --------------------------
     # ШАГ 2 подключаемся к ОФД
@@ -38,8 +39,7 @@ def main():
     z_reports_data = pd.DataFrame()
     fiscal_broken = list()
     count_printers = 0
-    i = 0
-    # fn_list = ('0000583024034213',)
+    # i = 0 для теста
     for fn in fn_list:
         z_rep = pd.DataFrame(z.get_z_rep(cooks, fn[0], date_from, date_to, inn='7825335145'))
         if len(z_rep) == 0:
