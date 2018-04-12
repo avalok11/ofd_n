@@ -36,7 +36,7 @@ def push_kkt(kkt_list):
                               database=vl.db_ms, charset='utf8')
 
     cursor_ms = conn_ms.cursor()
-    cursor_ms.execute('DELETE FROM RU_T_FISCAL_KKTn;')
+    cursor_ms.execute('TRUNCATE TABLE RU_T_FISCAL_KKTn;')
     cursor_ms.executemany("BEGIN "
                           "  IF NOT EXISTS "
                           "    (SELECT 1 FROM RU_T_FISCAL_KKT WHERE regId=%s AND factoryId=%s )"
@@ -89,7 +89,7 @@ def push_fn(fn_list):
                               database=vl.db_ms, charset='utf8')
 
     cursor_ms = conn_ms.cursor()
-    cursor_ms.execute('DELETE FROM RU_T_FISCAL_FN;')
+    cursor_ms.execute('TRUNCATE TABLE RU_T_FISCAL_FN;')
     cursor_ms.executemany("BEGIN "
                           "  IF NOT EXISTS "
                           "    (SELECT 1 FROM RU_T_FISCAL_FN WHERE regId=%s AND storageId=%s )"
