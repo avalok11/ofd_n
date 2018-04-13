@@ -1,5 +1,4 @@
-
-#!/usr/local/bin/python3.5
+#!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -10,36 +9,25 @@ import pandas as pd
 import time
 import ofd as z
 import datetime
-import sys
 
 
 def main():
-    # logs
-    old_stdout = sys.stdout
-    day = datetime.datetime.today().date().isoformat()
-    hour = datetime.datetime.today().hour
-    minute = datetime.datetime.today().minute
-    filename = "/usr/local/www/ofd/logs/AmRest_message_"+day+"_"+str(hour)+"_"+str(minute)+".log"
-    log_file = open(filename, "w")
-    sys.stdout = log_file
-    print("Start logs.")
-
-    # get data from WEB string
-    param = sys.argv[1]
-    print(param)
-    param = param.split()
-    print(param)
-    if len(param) != 3:
-        sys.exit("failed number of parameters")
-    fn_list = [(param[0],)]
-    date_from = param[1]
-    date_to = param[2]
-
+    # определяем даты за которые собираем данные
+    date_from = datetime.datetime.strftime((datetime.datetime.today() - datetime.timedelta(days=7)).
+                                           replace(microsecond=0).replace(second=0).replace(hour=0).replace(minute=0),
+                                           '%Y-%m-%dT%H:%M:%S')
+    date_from = '2018-04-01T00:00:00'
     print(date_from)
+    today = datetime.datetime.today().replace(microsecond=0).replace(second=0).replace(hour=0).replace(minute=0)
+    date_to = datetime.datetime.strftime(datetime.datetime.today()
+                                         .replace(microsecond=0).replace(second=0).replace(hour=0).replace(minute=0),
+                                         '%Y-%m-%dT%H:%M:%S')
+    date_to = '2018-04-04T00:00:00'
     print(date_to)
     # --------------------------
     # ШАГ 1 Получаем список Фискальных накопителей из базы данных
     # fn_list = sql.get_fn()
+    fn_list = [('0000546299024021',)]  # РЕГИСТРАЦИОННЫЙ НОМЕР ККТ
 
     # --------------------------
     # ШАГ 2 подключаемся к ОФД
@@ -53,8 +41,7 @@ def main():
     z_reports_data = pd.DataFrame()
     fiscal_broken = list()
     count_printers = 0
-    i = 0
-    # fn_list = ('0000583024034213',)
+    # i = 0 для теста
     for fn in fn_list:
         z_rep = pd.DataFrame(z.get_z_rep(cooks, fn[0], date_from, date_to, inn='7825335145'))
         if len(z_rep) == 0:
@@ -80,10 +67,6 @@ def main():
     # --------------------------
     # ШАГ 4 Записываем сломанные ФИР в SQL
     sql.push_broken_fn(fiscal_broken, date_to)
-
-    print("Finished logs.")
-    sys.stdout = old_stdout
-    log_file.close()
 
 
 if __name__ == "__main__":

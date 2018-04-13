@@ -94,7 +94,7 @@ def push_fn(fn_list):
                           "  IF NOT EXISTS "
                           "    (SELECT 1 FROM RU_T_FISCAL_FN WHERE regId=%s AND storageId=%s )"
                           "  BEGIN "
-                          "    INSERT INTO RU_T_FISCAL_FNn (regId, storageId, model, status, effectiveFrom,"
+                          "    INSERT INTO RU_T_FISCAL_FN (regId, storageId, model, status, effectiveFrom,"
                           "                                  effectiveTo, fsFinishDate) "
                           "    VALUES (%s, %s, %s, %s, %s, %s, %s)"
                           "  END "
