@@ -35,4 +35,4 @@ def connect(idd=vl.ofd_idd, login=vl.ofd_name, pwd=vl.ofd_pwd):
     print("|  SID: ", sid)
     print("|  TOKEN: ", token)
     print("--------------------------------\n")
-    return cooks
+    return response, cooks

@@ -16,22 +16,22 @@ def main():
     date_from = datetime.datetime.strftime((datetime.datetime.today() - datetime.timedelta(days=7)).
                                            replace(microsecond=0).replace(second=0).replace(hour=0).replace(minute=0),
                                            '%Y-%m-%dT%H:%M:%S')
-    date_from = '2018-04-01T00:00:00'
+    #date_from = '2018-04-01T00:00:00'
     print(date_from)
     today = datetime.datetime.today().replace(microsecond=0).replace(second=0).replace(hour=0).replace(minute=0)
     date_to = datetime.datetime.strftime(datetime.datetime.today()
                                          .replace(microsecond=0).replace(second=0).replace(hour=0).replace(minute=0),
                                          '%Y-%m-%dT%H:%M:%S')
-    date_to = '2018-04-04T00:00:00'
+    #date_to = '2018-04-04T00:00:00'
     print(date_to)
     # --------------------------
     # ШАГ 1 Получаем список Фискальных накопителей из базы данных
-    # fn_list = sql.get_fn()
-    fn_list = [('0000546299024021',)]  # РЕГИСТРАЦИОННЫЙ НОМЕР ККТ
+    #fn_list = sql.get_fn()
+    fn_list = [('0000338947038505',)]  # РЕГИСТРАЦИОННЫЙ НОМЕР ККТ
 
     # --------------------------
     # ШАГ 2 подключаемся к ОФД
-    cooks = au.connect(idd=vl.ofd_idd, login=vl.ofd_name, pwd=vl.ofd_pwd)
+    # response, cooks = au.connect(idd=vl.ofd_idd, login=vl.ofd_name, pwd=vl.ofd_pwd)
 
     # --------------------------
     # Получаем список Z отчетов из ОФД
@@ -43,12 +43,17 @@ def main():
     count_printers = 0
     # i = 0 для теста
     for fn in fn_list:
+        start = datetime.datetime.today()
+        response, cooks = au.connect(idd=vl.ofd_idd, login=vl.ofd_name, pwd=vl.ofd_pwd)
         z_rep = pd.DataFrame(z.get_z_rep(cooks, fn[0], date_from, date_to, inn='7825335145'))
         if len(z_rep) == 0:
             fiscal_broken.append((fn[0], today))
             count_printers -= 1
         z_reports_data = pd.concat([z_reports_data, z_rep])
         count_printers += 1
+        response.close()
+        print(count_printers)
+        print("it takes: ", datetime.datetime.today()-start)
         # для теста
         # i += 1
         # if i == 19:
