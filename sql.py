@@ -8,7 +8,7 @@ from datetime import datetime
 import time
 
 
-def push_kkt(kkt_list):
+def push_kkt(kkt_list, push=True):
     # ===
     # подготавливаем данные, определяем точный набор полей для корректного залития
     print("--------------------------------")
@@ -36,7 +36,8 @@ def push_kkt(kkt_list):
                               database=vl.db_ms, charset='utf8')
 
     cursor_ms = conn_ms.cursor()
-    cursor_ms.execute('DELETE FROM RU_T_FISCAL_KKTn;')
+    if push:
+        cursor_ms.execute('DELETE FROM RU_T_FISCAL_KKT;')
     cursor_ms.executemany("BEGIN "
                           "  IF NOT EXISTS "
                           "    (SELECT 1 FROM RU_T_FISCAL_KKT WHERE regId=%s AND factoryId=%s )"
@@ -55,7 +56,7 @@ def push_kkt(kkt_list):
     print("--------------------------------\n")
 
 
-def push_fn(fn_list):
+def push_fn(fn_list, push=True):
     # ===
     # подготавливаем данные, определяем точный набор полей для корректного залития
     print("--------------------------------")
@@ -89,7 +90,8 @@ def push_fn(fn_list):
                               database=vl.db_ms, charset='utf8')
 
     cursor_ms = conn_ms.cursor()
-    cursor_ms.execute('DELETE FROM RU_T_FISCAL_FN;')
+    if push:
+        cursor_ms.execute('DELETE FROM RU_T_FISCAL_FN;')
     cursor_ms.executemany("BEGIN "
                           "  IF NOT EXISTS "
                           "    (SELECT 1 FROM RU_T_FISCAL_FN WHERE regId=%s AND storageId=%s )"
