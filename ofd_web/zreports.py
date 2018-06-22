@@ -27,12 +27,10 @@ def main():
         sys.exit("Failed to read kktnumber and dates")
     param = param.split()
     print("Enter parameters:<br>", param, "<br>")
-    if len(param) != 3:
+    if len(param) != 4:
         print("<br>ERROR wrong data <br>")
-        print("<br>Failed number of parameters.<br>The amount of parameters total=3.<br>Example: "
-              "http://192.168.57.227/ofd/z_reports.py 0001604042030746 2018-04-04T00:00:00 2018-04-05T00:00:00")
-        sys.exit("Failed number of parameters. The amount of parameters total=3. Example: "
-                 "http://192.168.57.227/ofd/z_reports.py?0001604042030746%202018-04-04T00:00:00%202018-04-05T00:00:00.")
+        print("<br>Failed number of parameters.<br>The amount of parameters total=4.<br>Example: http://192.168.57.227/ofd/z_reports.py 0001604042030746 2018-04-04T00:00:00 2018-04-05T00:00:00 1")
+        sys.exit("Failed number of parameters. The amount of parameters total=4. Example: http://192.168.57.227/ofd/z_reports.py?0001604042030746%202018-04-04T00:00:00%202018-04-05T00:00:00%201. Where %20 - SPACE.")
 
     try:
         dateF = datetime.strptime(param[1],'%Y-%m-%dT%H:%M:%S')
@@ -43,13 +41,14 @@ def main():
         sys.exit("Error datetime format.")
     if dateF>dateT:
         print("<br>ERROR datetime start stop <br>")
-        print("First datetime should be less then last datetime.<br>Example: "
-              "http://192.168.57.227/ofd/z_reports.py 0001604042030746 2018-04-04T00:00:00 2018-04-05T00:00:00")
+        print("First datetime should be less then last datetime.<br>Example: http://192.168.57.227/ofd/z_reports.py 0001604042030746 2018-04-04T00:00:00 2018-04-05T00:00:00 1")
         sys.exit("Error datetime start stop.")
 
     fn_list = [(param[0],)]
     date_from = param[1]
     date_to = param[2]
+    amrest = param[3]
+    amrest = int(amrest)
 
 
     # logs
@@ -69,11 +68,15 @@ def main():
     # --------------------------
     # ШАГ 1 Получаем список Фискальных накопителей из базы данных
     # fn_list = sql.get_fn()
-    # fn_list = [('0000546299024021',)]
+    #fn_list = [('0000546299024021',)]
 
     # --------------------------
     # ШАГ 2 подключаемся к ОФД
-    cooks = au.connect(idd=vl.ofd_idd, login=vl.ofd_name, pwd=vl.ofd_pwd)
+    if amrest==1:
+        cooks = au.connect(idd=vl.ofd_idd, login=vl.ofd_name, pwd=vl.ofd_pwd)
+    elif amrest==2:
+        cooks = au.connect(idd=vl.ofd_idd, login=vl.ofd_name_y, pwd=vl.ofd_pwd_y)
+    print ("Cooks:<br>", cooks, "<br>")
 
     # --------------------------
     # Получаем список Z отчетов из ОФД
@@ -86,7 +89,12 @@ def main():
     i = 0
     # fn_list = ('0000583024034213',)
     for fn in fn_list:
-        z_rep = pd.DataFrame(z.get_z_rep(cooks, fn[0], date_from, date_to, inn='7825335145'))
+        if amrest==1:
+            z_rep = pd.DataFrame(z.get_z_rep(cooks, fn[0], date_from, date_to, inn=vl.inn))
+        elif amrest==2:
+            z_rep = pd.DataFrame(z.get_z_rep(cooks, fn[0], date_from, date_to, inn=vl.inn_y))
+        #else:
+        #    int z_rep
         if len(z_rep) == 0:
             fiscal_broken.append((fn[0], today))
             count_printers -= 1
@@ -117,11 +125,11 @@ def main():
     sys.stdout = old_stdout
     log_file.close()
 
-    # part of HTML
+    #part of HTML
     if count_printers==1:
         print("<br>================================<br>")
         print("Date from: ", date_from, "<br>")
-        print("Date to: ", date_to, "<br>")
+        print("Date to: " ,date_to, "<br>")
         print("KKT number: ", fn[0], "<br><br>")
         print("--------------------------------<br>")
         print("|RECEIVING Z reports from OFD<br>")
@@ -141,5 +149,6 @@ def main():
         print("</font>")
         print("--------------------------------<br><br>")
 
-    if __name__ == "__main__":
-        main()
+
+if __name__ == "__main__":
+    main()
